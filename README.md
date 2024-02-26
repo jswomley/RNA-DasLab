@@ -4,8 +4,14 @@ James Swomley, Leon H. Kloker, Hamish Blair
 ## Introduction
 The secondary and tertiary structure of an RNA molecule, as shown in Figure 1, are crucial to its transcription of proteins, since they determine the reactivity of its individual nucleotides depending on whether they are paired or unpaired. However, directly measuring the structure of individual RNA molecules remains difficult, even with modern methods such as cryo-electron microscopy (cryo-EM), which is in direct contrast to the relative triviality of simply sequencing RNA molecules. The ability to infer such structures from only the sequence of the RNA molecule would help bridge this gap.
 
-<p align="center"><img src="https://github.com/jswomley/RNA-DasLab/assets/85267950/725653e6-d444-404c-9969-e5e624e487bc" width=900>
+<p align="center"><img src="https://github.com/jswomley/RNA-DasLab/assets/85267950/725653e6-d444-404c-9969-e5e624e487bc" width=1000>
 Figure 1: An RNA sequence, its secondary structure, and its tertiary structure.
+
+An intermediate step in this process is given by the selective 2’-hydroxyl acylation analyzed by primer extension (SHAPE) data associated with an RNA molecule. This measures the local reactivity of each nucleotide in the molecule with a certain reagent, such as 1M6, 1M7, or NMIA [1], and in turn informs the local flexibility of the RNA at a single-nucleotide resolution, with paired nucleotides exhibiting a lower flexibility in most cases than their unpaired counterparts.
+
+This means that the SHAPE data is of use in determining the secondary structure of an RNA molecule, which is done in various papers such as Spasic et. al. [2]. It is also expected to completely encode the tertiary structure, in that a perfect reconstruction of the SHAPE data of a molecule will allow for the computation of its tertiary structure. Given that the experimental determination of the tertiary structure through cryo-EM comes in at around $1,000 per molecule, whereas extraction of SHAPE data costs only $1 per molecule, it is much more amenable to machine learning methods at the moment, and indeed Stanford’s Das Lab has recently released an appreciable amount of SHAPE-labeled RNA sequences. However, the task of accurately calculating the SHAPE values for a given sequence of nucleotides remains largely open and is what our research addresses.
+
+In this paper, we evaluate a number of deep learning models trained to predict SHAPE data from RNA sequences, finding a model centered around a foundation model and gated recurrent units (GRUs) to perform best.
 
 ## Data
 The data used to train the models consists of 115,200 distinct RNA sequences ranging from length 115 to 206, specifically selected from a larger set of sequences to ensure high signal-to-noise ratio and read coverage. In addition to the training data, a validation and test dataset both containing 6,060 RNA sequences, which amounts to 5% of the overall data, were used. The four different nucleotides of the RNA sequences are represented using simple integer numbering.
@@ -50,7 +56,7 @@ In addition to the loss (MAE), the performance of the model is also evaluated by
 where $y_i$ and $y_i^\*$ are the experimental and predicted SHAPE values at nucleotide $i$ of the sampled sequence, respectively, and $\bar{y}$ and $\bar{y}^\*$ denote their mean values.
 
 Our primary set of trials involve comparing the baseline sequence model with the sequence model trained on RNA-FM embeddings, for a variety of sequence model types. These models all use two prediction heads, predicting the SHAPE values corresponding to DMS and 2A3. All performance metrics shown are calculated considering all results across both heads.
-<p align="center"><img src="https://github.com/jswomley/RNA-DasLab/assets/85267950/1bc1ef2a-a95a-4a69-8de9-c1ebce09d3ee" width=900>
+<p align="center"><img src="https://github.com/jswomley/RNA-DasLab/assets/85267950/1bc1ef2a-a95a-4a69-8de9-c1ebce09d3ee" width=1000>
 Table 1: Model Performance Metrics on Test Data
 
 The GRU proves to be the best performing sequence model in all cases, considering both Pearson correlation coefficient and mean absolute error. The CNN and LSTM both perform somewhat worse than the GRU in all cases, while the transformer underperforms all of them. In the baseline model, the transformer performs very poorly despite being the most state-of-the-art and expressive sequence model out of the four tested models.
